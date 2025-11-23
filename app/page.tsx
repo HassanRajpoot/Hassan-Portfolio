@@ -63,18 +63,18 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {[
-              "React",
-              "Next.js",
+              "Django Rest",
               "TypeScript",
-              "Node.js",
-              "PostgreSQL",
-              "MongoDB",
-              "Tailwind CSS",
-              "API Design",
-              "GraphQL",
-              "Docker",
-              "Git",
+              "Postgres",
+              "JavaScript",
+              "React",
               "AWS",
+              "Docker",
+              "Next.js",
+              "Node",
+              "FastAPI",
+              "MongoDB",
+              "Python",
             ].map((skill) => (
               <div
                 key={skill}
@@ -84,6 +84,7 @@ export default function Home() {
               </div>
             ))}
           </div>
+
         </div>
       </section>
     </main>
