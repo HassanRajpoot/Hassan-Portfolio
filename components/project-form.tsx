@@ -3,38 +3,44 @@
 import type React from "react"
 
 import { useState } from "react"
-import type { Project } from "@/lib/projects-store"
+
+interface ProjectFormData {
+  title: string
+  description: string
+  technologies: string
+  image?: string
+  github_url?: string
+  live_demo_url?: string
+}
 
 interface ProjectFormProps {
-  initialData?: Project
-  onSubmit: (data: Omit<Project, "id" | "createdAt">) => void
+  initialData?: ProjectFormData & { id?: number }
+  onSubmit: (data: ProjectFormData) => void
   onCancel: () => void
 }
 
 export default function ProjectForm({ initialData, onSubmit, onCancel }: ProjectFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProjectFormData>({
     title: initialData?.title || "",
     description: initialData?.description || "",
-    techStack: initialData?.techStack.join(", ") || "",
-    imageUrl: initialData?.imageUrl || "",
-    githubLink: initialData?.githubLink || "",
-    liveLink: initialData?.liveLink || "",
+    technologies: initialData?.technologies || "",
+    image: initialData?.image || "",
+    github_url: initialData?.github_url || "",
+    live_demo_url: initialData?.live_demo_url || "",
   })
 
-  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imageUrl || null)
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image || null)
   const [uploadError, setUploadError] = useState<string>("")
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setUploadError("Please upload a valid image file")
       return
     }
 
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       setUploadError("Image size must be less than 5MB")
       return
@@ -42,12 +48,11 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
 
     setUploadError("")
 
-    // Convert image to base64
     const reader = new FileReader()
     reader.onload = (event) => {
       const base64String = event.target?.result as string
       setImagePreview(base64String)
-      setFormData((prev) => ({ ...prev, imageUrl: base64String }))
+      setFormData((prev) => ({ ...prev, image: base64String }))
     }
     reader.onerror = () => {
       setUploadError("Failed to read file")
@@ -60,13 +65,10 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
     onSubmit({
       title: formData.title,
       description: formData.description,
-      techStack: formData.techStack
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-      imageUrl: formData.imageUrl,
-      githubLink: formData.githubLink || undefined,
-      liveLink: formData.liveLink || undefined,
+      technologies: formData.technologies,
+      image: formData.image,
+      github_url: formData.github_url || undefined,
+      live_demo_url: formData.live_demo_url || undefined,
     })
   }
 
@@ -76,10 +78,7 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-[color:--color-surface] border border-[color:--color-border] rounded-lg p-6 space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-6 space-y-4">
       <div>
         <label className="block font-semibold mb-2 text-sm">Project Title *</label>
         <input
@@ -88,7 +87,7 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
           value={formData.title}
           onChange={handleChange}
           required
-          className="w-full border border-[color:--color-border] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[color:--color-primary]"
+          className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
         />
       </div>
 
@@ -100,27 +99,27 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
           onChange={handleChange}
           required
           rows={3}
-          className="w-full border border-[color:--color-border] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[color:--color-primary]"
+          className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
         />
       </div>
 
       <div>
-        <label className="block font-semibold mb-2 text-sm">Tech Stack (comma-separated) *</label>
+        <label className="block font-semibold mb-2 text-sm">Technologies (comma-separated) *</label>
         <input
           type="text"
-          name="techStack"
-          value={formData.techStack}
+          name="technologies"
+          value={formData.technologies}
           onChange={handleChange}
           required
-          placeholder="React, Node.js, MongoDB"
-          className="w-full border border-[color:--color-border] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[color:--color-primary]"
+          placeholder="React, Node.js, PostgreSQL"
+          className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
         />
       </div>
 
       <div>
         <label className="block font-semibold mb-2 text-sm">Project Image *</label>
         <div className="space-y-3">
-          <div className="border-2 border-dashed border-[color:--color-border] rounded-lg p-4 text-center hover:border-[color:--color-primary] transition cursor-pointer">
+          <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary transition cursor-pointer">
             <input
               type="file"
               accept="image/*"
@@ -130,14 +129,13 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
               required={!imagePreview}
             />
             <label htmlFor="image-upload" className="cursor-pointer block">
-              <div className="text-sm text-[color:--color-muted]">
+              <div className="text-sm text-muted-foreground">
                 <div className="font-semibold">Click to upload or drag and drop</div>
                 <div className="text-xs">PNG, JPG, GIF up to 5MB</div>
               </div>
             </label>
           </div>
 
-          {/* Image preview */}
           {imagePreview && (
             <div className="relative">
               <img
@@ -149,7 +147,7 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
                 type="button"
                 onClick={() => {
                   setImagePreview(null)
-                  setFormData((prev) => ({ ...prev, imageUrl: "" }))
+                  setFormData((prev) => ({ ...prev, image: "" }))
                 }}
                 className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold"
               >
@@ -166,10 +164,10 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
         <label className="block font-semibold mb-2 text-sm">GitHub Link</label>
         <input
           type="url"
-          name="githubLink"
-          value={formData.githubLink}
+          name="github_url"
+          value={formData.github_url}
           onChange={handleChange}
-          className="w-full border border-[color:--color-border] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[color:--color-primary]"
+          className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
         />
       </div>
 
@@ -177,24 +175,24 @@ export default function ProjectForm({ initialData, onSubmit, onCancel }: Project
         <label className="block font-semibold mb-2 text-sm">Live Demo Link</label>
         <input
           type="url"
-          name="liveLink"
-          value={formData.liveLink}
+          name="live_demo_url"
+          value={formData.live_demo_url}
           onChange={handleChange}
-          className="w-full border border-[color:--color-border] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[color:--color-primary]"
+          className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
         />
       </div>
 
       <div className="flex gap-2">
         <button
           type="submit"
-          className="flex-1 bg-[color:--color-primary] text-white py-2 rounded-lg font-semibold hover:bg-[color:--color-primary-dark] transition text-sm"
+          className="flex-1 bg-primary text-primary-foreground py-2 rounded-lg font-semibold hover:bg-primary/90 transition text-sm"
         >
           {initialData ? "Update" : "Add"} Project
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 border border-[color:--color-border] py-2 rounded-lg font-semibold hover:bg-[color:--color-surface] transition text-sm"
+          className="flex-1 border border-border py-2 rounded-lg font-semibold hover:bg-muted transition text-sm"
         >
           Cancel
         </button>

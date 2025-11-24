@@ -1,23 +1,44 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { getProjects, type Project } from "@/lib/projects-store"
+
+export interface Project {
+  id?: number
+  title: string
+  description: string
+  image?: string
+  technologies?: string
+  github_url?: string
+  live_demo_url?: string
+}
 
 export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setProjects(getProjects())
-    setLoading(false)
-
-    const handleStorageChange = () => {
-      setProjects(getProjects())
-    }
-
-    window.addEventListener("storage", handleStorageChange)
-    return () => window.removeEventListener("storage", handleStorageChange)
+    fetchProjects()
   }, [])
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch("/api/projects")
+      const data = await response.json()
+      setProjects(data)
+    } catch (error) {
+      console.error("Error fetching projects:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getTechStack = (technologies: string | undefined) => {
+    if (!technologies) return []
+    return technologies
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+  }
 
   return (
     <main className="py-20 px-4">
@@ -40,7 +61,7 @@ export default function Projects() {
               >
                 <div className="relative overflow-hidden h-56 bg-muted">
                   <img
-                    src={project.imageUrl || "/placeholder.svg?height=224&width=400&query=project"}
+                    src={project.image || "/placeholder.svg?height=224&width=400&query=project"}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
                   />
@@ -53,7 +74,7 @@ export default function Projects() {
                       Tech Stack
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {project.techStack.map((tech) => (
+                      {getTechStack(project.technologies).map((tech) => (
                         <span
                           key={tech}
                           className="bg-primary/15 text-primary text-xs px-3 py-1.5 rounded-full font-semibold border border-primary/30"
@@ -64,9 +85,9 @@ export default function Projects() {
                     </div>
                   </div>
                   <div className="flex gap-4 pt-4 border-t border-border/30">
-                    {project.githubLink && (
+                    {project.github_url && (
                       <a
-                        href={project.githubLink}
+                        href={project.github_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:text-accent font-semibold text-sm transition flex items-center gap-1"
@@ -74,9 +95,9 @@ export default function Projects() {
                         GitHub →
                       </a>
                     )}
-                    {project.liveLink && (
+                    {project.live_demo_url && (
                       <a
-                        href={project.liveLink}
+                        href={project.live_demo_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-accent hover:text-primary font-semibold text-sm transition flex items-center gap-1"

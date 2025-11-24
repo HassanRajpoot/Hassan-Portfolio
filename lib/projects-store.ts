@@ -12,13 +12,27 @@ export interface Project {
 
 const STORAGE_KEY = "portfolio_projects"
 
+const initializeStorage = (): void => {
+  if (typeof window === "undefined") return
+  try {
+    const data = localStorage.getItem(STORAGE_KEY)
+    if (!data) {
+      // Only set default projects if storage is completely empty
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getDefaultProjects()))
+    }
+  } catch {
+    // Storage not available
+  }
+}
+
 export const getProjects = (): Project[] => {
   if (typeof window === "undefined") return []
   try {
+    initializeStorage()
     const data = localStorage.getItem(STORAGE_KEY)
-    return data ? JSON.parse(data) : getDefaultProjects()
+    return data ? JSON.parse(data) : []
   } catch {
-    return getDefaultProjects()
+    return []
   }
 }
 
