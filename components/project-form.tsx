@@ -14,7 +14,15 @@ interface ProjectFormData {
 }
 
 interface ProjectFormProps {
-  initialData?: ProjectFormData & { id?: number }
+  initialData?: {
+    id?: number
+    title: string
+    description: string
+    technologies?: string
+    image?: string
+    github_url?: string
+    live_demo_url?: string
+  }
   onSubmit: (data: ProjectFormData) => void
   onCancel: () => void
 }

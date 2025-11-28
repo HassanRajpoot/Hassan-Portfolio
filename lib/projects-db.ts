@@ -26,14 +26,23 @@ export async function getAllProjects(): Promise<Project[]> {
 
 export async function createProject(project: Project): Promise<Project | null> {
   try {
+    console.log("[v0] createProject - Starting with data:", {
+      title: project.title,
+      technologies: project.technologies,
+    })
     const result = await sql`
       INSERT INTO projects (title, description, image, technologies, github_url, live_demo_url)
       VALUES (${project.title}, ${project.description}, ${project.image || null}, ${project.technologies || ""}, ${project.github_url || ""}, ${project.live_demo_url || ""})
       RETURNING *
     `
+    console.log("[v0] createProject - Database result:", result)
+    if (!result || result.length === 0) {
+      console.error("[v0] createProject - No result returned from database")
+      return null
+    }
     return result[0] as Project
   } catch (error) {
-    console.error("Error creating project:", error)
+    console.error("[v0] createProject - Database error:", error)
     return null
   }
 }

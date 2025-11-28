@@ -3,9 +3,18 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { isAuthenticated, clearAuthToken } from "@/lib/auth"
-import { getProjects, addProject, updateProject, deleteProject, type Project } from "@/lib/projects-store"
 import ProjectForm from "@/components/project-form"
 import ProjectList from "@/components/project-list"
+
+export interface Project {
+  id?: number
+  title: string
+  description: string
+  image?: string
+  technologies?: string
+  github_url?: string
+  live_demo_url?: string
+}
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -19,27 +28,59 @@ export default function AdminDashboard() {
       router.push("/login")
       return
     }
-    setProjects(getProjects())
-    setLoading(false)
+    fetchProjects()
   }, [router])
 
-  const handleAddProject = (formData: Omit<Project, "id" | "createdAt">) => {
-    const newProject = addProject(formData)
-    setProjects([...projects, newProject])
-    setIsFormOpen(false)
-  }
-
-  const handleUpdateProject = (id: string, formData: Omit<Project, "id" | "createdAt">) => {
-    const updated = updateProject(id, formData)
-    if (updated) {
-      setProjects(projects.map((p) => (p.id === id ? updated : p)))
-      setEditingProject(null)
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch("/api/projects")
+      const data = await response.json()
+      setProjects(data)
+    } catch (error) {
+      console.error("Error fetching projects:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleDeleteProject = (id: string) => {
-    if (deleteProject(id)) {
+  const handleAddProject = async (formData: Omit<Project, "id">) => {
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      const newProject = await response.json()
+      setProjects([newProject, ...projects])
+      setIsFormOpen(false)
+    } catch (error) {
+      console.error("Error creating project:", error)
+    }
+  }
+
+  const handleUpdateProject = async (id: number | undefined, formData: Omit<Project, "id">) => {
+    if (!id) return
+    try {
+      const response = await fetch("/api/projects", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...formData }),
+      })
+      const updated = await response.json()
+      setProjects(projects.map((p) => (p.id === id ? updated : p)))
+      setEditingProject(null)
+    } catch (error) {
+      console.error("Error updating project:", error)
+    }
+  }
+
+  const handleDeleteProject = async (id: number | undefined) => {
+    if (!id) return
+    try {
+      await fetch(`/api/projects?id=${id}`, { method: "DELETE" })
       setProjects(projects.filter((p) => p.id !== id))
+    } catch (error) {
+      console.error("Error deleting project:", error)
     }
   }
 
