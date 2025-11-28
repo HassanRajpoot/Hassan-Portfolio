@@ -26,6 +26,7 @@ export async function getAllProjects(): Promise<Project[]> {
 
 export async function createProject(project: Project): Promise<Project | null> {
   try {
+    
     console.log("[v0] createProject - Starting with data:", {
       title: project.title,
       technologies: project.technologies,
