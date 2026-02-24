@@ -9,9 +9,9 @@ const geistSans = Geist({ subsets: ["latin"] })
 const geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Developer Portfolio",
-  description: "Showcase of my projects and skills",
-    generator: 'v0.app'
+  title: "Hassan Shahzad | Full-Stack Python & AI Engineer",
+  description:
+    "Full-Stack Engineer specializing in high-performance Python APIs, React frontends, and LLM integration. Built systems serving 100,000+ users with 40% latency improvements. Available for remote work.",
 }
 
 export default function RootLayout({
